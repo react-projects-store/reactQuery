@@ -6,7 +6,7 @@ function UsersInfinite() {
   const pageSize = 20;
 
   const {
-    data: { pages } = {},
+    data,
     isLoading,
     isError,
     error,
@@ -21,13 +21,10 @@ function UsersInfinite() {
   return (
     <div>
       <h1>Users</h1>
+
       <ul>
-        {pages?.map((page, idx) => (
-          <ul key={`page-${idx}`}>
-            {page.users?.map((user) => (
-              <User key={user.id} {...user} />
-            ))}
-          </ul>
+        {data?.map((user) => (
+          <User key={user.id} {...user} />
         ))}
       </ul>
       <button

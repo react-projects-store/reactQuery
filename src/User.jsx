@@ -7,7 +7,10 @@ export const User = ({ id, firstName, lastName, email }) => {
 
   return (
     <>
-      <li onClick={() => setOpen(true)} style={{ cursor: "pointer" }}>
+      <li
+        onClick={() => setOpen(true)}
+        style={{ cursor: "pointer", width: "max-content" }}
+      >
         {id} - {firstName} {lastName} ({email})
       </li>
 
