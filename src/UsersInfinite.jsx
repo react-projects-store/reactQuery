@@ -1,4 +1,4 @@
-import { useUsersInfinite } from "./hooks/useUsers";
+import { useUsersInfinite, useUserDelete } from "./hooks/useUsers";
 import "./App.css";
 import { User } from "./User";
 
@@ -15,6 +15,8 @@ function UsersInfinite() {
     hasNextPage,
   } = useUsersInfinite(pageSize);
 
+  const { mutate: deleteUser, isPending: isDeleting } = useUserDelete();
+
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error: {error.message}</p>;
 
@@ -24,7 +26,12 @@ function UsersInfinite() {
 
       <ul>
         {data?.map((user) => (
-          <User key={user.id} {...user} />
+          <User
+            key={user.id}
+            {...user}
+            onDelete={deleteUser}
+            deleting={isDeleting}
+          />
         ))}
       </ul>
       <button

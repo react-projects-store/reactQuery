@@ -1,6 +1,16 @@
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import {
+  useQuery,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 
-import { fetchUsers, fetchUserById, fetchUsersInfinite } from "../services/api";
+import {
+  fetchUsers,
+  fetchUserById,
+  fetchUsersInfinite,
+  deleteUser,
+} from "../services/api";
 
 const userKeys = {
   all: ["users"],
@@ -45,5 +55,44 @@ export const useUser = (userId, enabled) => {
     queryFn: () => fetchUserById(userId),
     enabled: !!userId && enabled,
     staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useUserDelete = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteUser,
+    onSuccess: (result, deletedUserId) => {
+      // Update paginated lists
+      queryClient.setQueriesData({ queryKey: userKeys.list({}) }, (oldData) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          users: oldData.users.filter((user) => user.id !== deletedUserId),
+          total: oldData.total - 1,
+        };
+      });
+
+      // Update infinite lists
+      queryClient.setQueriesData(
+        { queryKey: userKeys.infinite({}) },
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page) => ({
+              ...page,
+              users: page.users.filter((user) => user.id !== deletedUserId),
+              total: page.total - 1,
+            })),
+          };
+        }
+      );
+
+      // Optionally remove the detail cache
+      queryClient.removeQueries({ queryKey: userKeys.detail(deletedUserId) });
+    },
   });
 };
